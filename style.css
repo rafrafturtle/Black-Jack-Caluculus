@@ -1,0 +1,174 @@
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #076324;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: gold;
+            margin-top: 0;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 120px;
+        }
+        
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .red {
+            color: red;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+        
+        #hit {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #stand {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        #deal {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        #calculus-btn {
+            background-color: #FFC107;
+            color: black;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .score {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            color: gold;
+            min-height: 30px;
+            margin: 15px 0;
+        }
+        
+        .powerup-cards {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .powerup-card {
+            width: 100px;
+            height: 60px;
+            background-color: #9C27B0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .powerup-card:hover {
+            transform: scale(1.05);
+            border-color: gold;
+        }
+        
+        .powerup-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .close-modal {
+            margin-top: 15px;
+            padding: 8px 15px;
+            background-color: #f44336;
+        }

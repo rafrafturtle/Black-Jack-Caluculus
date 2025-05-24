@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Kalkulus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>BLACKJACK KALKULUS</h1>
+        
+        <div class="game-area">
+            <div>
+                <h2>Dealer</h2>
+                <div class="score">Skor: <span id="dealer-score">?</span></div>
+                <div class="cards" id="dealer-cards"></div>
+            </div>
+            
+            <div class="message" id="message"></div>
+            
+            <div>
+                <h2>Anda</h2>
+                <div class="score">Skor: <span id="player-score">0</span></div>
+                <div class="cards" id="player-cards"></div>
+            </div>
+            
+            <div class="powerup-cards" id="powerups">
+                <div class="powerup-card" onclick="usePowerup('peek')">Lihat Kartu Lawan</div>
+                <div class="powerup-card" onclick="usePowerup('choose')">Pilih dari 2 Kartu</div>
+                <div class="powerup-card" onclick="usePowerup('remove')">Hapus Kartu</div>
+            </div>
+            
+            <div class="buttons">
+                <button id="hit" onclick="hit()">Hit</button>
+                <button id="stand" onclick="stand()">Stand</button>
+                <button id="deal" onclick="deal()">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="calculus-btn" onclick="showCalculusQuestion()">Power up</button>
+    
+    <div class="modal" id="calculus-modal">
+        <div class="modal-content">
+            <h2 id="calculus-question"></h2>
+            <input type="text" id="calculus-answer" placeholder="Jawaban Anda...">
+            <button onclick="checkCalculusAnswer()">Submit</button>
+            <button class="close-modal" onclick="closeModal()">Tutup</button>
+        </div>
+    </div>
+
+ <script src="script.js"></script>
+</body>
+</html>
