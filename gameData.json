@@ -4,11 +4,32 @@
     "values": ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
   },
   "calculusQuestions": [
-    { "question": "Turunan dari f(x) = x² + 3x adalah?", "answer": "2x+3" },
-    { "question": "Turunan dari f(x) = 5x² - 2x adalah?", "answer": "10x-2" },
-    { "question": "Turunan dari f(x) = 4x + 7 adalah?", "answer": "4" },
-    { "question": "Turunan dari f(x) = 3x² - 6x + 2 adalah?", "answer": "6x-6" },
-    { "question": "Turunan dari f(x) = x² + 2x adalah?", "answer": "2x+2" }
+    {
+      "question": "Turunan dari f(x) = x² + 3x adalah?",
+      "answer": "2x+3",
+      "explanation": "Turunan dari x² adalah 2x, dan turunan dari 3x adalah 3."
+    },
+    {
+      "question": "Turunan dari f(x) = 5x² - 2x adalah?",
+      "answer": "10x-2",
+      "explanation": "Turunan dari 5x² adalah 10x, dan turunan dari -2x adalah -2."
+    },
+    {
+      "question": "Turunan dari f(x) = 4x + 7 adalah?",
+      "answer": "4",
+      "explanation": "Turunan dari 4x adalah 4, dan turunan dari konstanta 7 adalah 0."
+    },
+    {
+      "question": "Turunan dari f(x) = 3x² - 6x + 2 adalah?",
+      "answer": "6x-6",
+      "explanation": "Turunan dari 3x² adalah 6x, turunan dari -6x adalah -6, dan turunan dari konstanta 2 adalah 0."
+    },
+    {
+      "question": "Turunan dari f(x) = x² + 2x adalah?",
+      "answer": "2x+2",
+      "explanation": "Turunan dari x² adalah 2x, dan turunan dari 2x adalah 2."
+    }
   ]
+
 }
 

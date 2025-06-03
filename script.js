@@ -1,7 +1,7 @@
-// Variabel permainan
 let suits = [];
 let values = [];
 let calculusQuestions = [];
+let powerupUsedThisTurn = false;
 
 fetch('gameData.json')
     .then(response => response.json())
@@ -9,7 +9,7 @@ fetch('gameData.json')
         suits = data.deck.suits;
         values = data.deck.values;
         calculusQuestions = data.calculusQuestions;
-        init(); // panggil init setelah data JSON dimuat
+        init();
     })
     .catch(error => {
         console.error("Gagal memuat data JSON:", error);
@@ -26,7 +26,6 @@ let powerups = {
     remove: false
 };
 
-// Elemen DOM
 const dealerCardsEl = document.getElementById('dealer-cards');
 const playerCardsEl = document.getElementById('player-cards');
 const dealerScoreEl = document.getElementById('dealer-score');
@@ -41,18 +40,13 @@ const calculusModal = document.getElementById('calculus-modal');
 const calculusQuestionEl = document.getElementById('calculus-question');
 const calculusAnswerEl = document.getElementById('calculus-answer');
 
-// Soal-soal turunan
-
-// Inisialisasi permainan
 function init() {
     hitBtn.disabled = true;
     standBtn.disabled = true;
-    dealBtn.disabled = false;
     calculusBtn.disabled = true;
     disablePowerups();
 }
 
-// Membuat deck kartu
 function createDeck() {
     deck = [];
     for (let suit of suits) {
@@ -60,15 +54,12 @@ function createDeck() {
             deck.push({ suit, value });
         }
     }
-
-    // Mengacak deck
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
 }
 
-// Memulai permainan baru
 function deal() {
     gameOver = false;
     playerHand = [];
@@ -76,18 +67,21 @@ function deal() {
     messageEl.textContent = "";
     calculusBtnUsed = false;
     calculusBtn.disabled = false;
+    calculusBtnUsed = false;
+    calculusBtn.disabled = false;
+    updateCalculusBtnState();
+
+
 
     createDeck();
 
-    // Membagikan kartu awal
     playerHand.push(dealCard());
     dealerHand.push(dealCard());
     playerHand.push(dealCard());
     dealerHand.push(dealCard());
 
-    renderHands();
+    renderHands(false, true, true);
 
-    // Memeriksa blackjack langsung
     if (calculateScore(playerHand) === 21) {
         endGame("Blackjack! Anda menang!", true);
     } else {
@@ -97,19 +91,21 @@ function deal() {
     }
 
     disablePowerups();
+
+
 }
 
-// Mengambil kartu dari deck
 function dealCard() {
     return deck.pop();
 }
 
-// Mengambil kartu tambahan
 function hit() {
+    powerupUsedThisTurn = false;
     if (gameOver) return;
 
     playerHand.push(dealCard());
-    renderHands();
+    renderHands(false, true, false); // player animasi saat hit
+
 
     const playerScore = calculateScore(playerHand);
 
@@ -118,10 +114,15 @@ function hit() {
     } else if (playerScore === 21) {
         stand();
     }
+
+    if (!calculusBtnUsed && !gameOver) {
+        calculusBtn.disabled = false;
+        updateCalculusBtnState();
+    }
 }
 
-// Berhenti mengambil kartu
 function stand() {
+    powerupUsedThisTurn = false;
     if (gameOver) return;
 
     gameOver = true;
@@ -129,12 +130,12 @@ function stand() {
     standBtn.disabled = true;
     calculusBtn.disabled = true;
 
-    // Dealer mengambil kartu sampai skor >= 17
     while (calculateScore(dealerHand) < 17) {
         dealerHand.push(dealCard());
     }
 
-    renderHands(true);
+    renderHands(true, false, true); // dealer animasi akhir
+
 
     const dealerScore = calculateScore(dealerHand);
     const playerScore = calculateScore(playerHand);
@@ -148,9 +149,12 @@ function stand() {
     } else {
         endGame("Seri!", true);
     }
+    if (!calculusBtnUsed && !gameOver) {
+        calculusBtn.disabled = false;
+        updateCalculusBtnState();
+    }
 }
 
-// Menghitung skor tangan
 function calculateScore(hand) {
     let score = 0;
     let aces = 0;
@@ -166,7 +170,6 @@ function calculateScore(hand) {
         }
     }
 
-    // Menyesuaikan skor jika ada ace dan skor melebihi 21
     while (score > 21 && aces > 0) {
         score -= 10;
         aces--;
@@ -175,11 +178,26 @@ function calculateScore(hand) {
     return score;
 }
 
-// Merender kartu ke layar
-function renderHands(showDealerCard = false) {
-    // Merender kartu dealer
+function renderHands(showDealerCard = false, animatePlayer = false, animateDealer = false) {
     dealerCardsEl.innerHTML = '';
-    dealerScoreEl.textContent = showDealerCard ? calculateScore(dealerHand) : '?';
+    
+    if (showDealerCard || powerups.peek) {
+        dealerScoreEl.textContent = calculateScore(dealerHand);
+    } else {
+        const visibleCard = dealerHand[1];
+        let visibleScore = 0;
+
+        if (visibleCard.value === 'A') {
+            visibleScore = 11;
+        } else if (['K', 'Q', 'J'].includes(visibleCard.value)) {
+            visibleScore = 10;
+        } else {
+            visibleScore = parseInt(visibleCard.value);
+        }
+
+        dealerScoreEl.textContent = `? + ${visibleScore}`;
+    }
+
 
     dealerHand.forEach((card, index) => {
         const cardEl = document.createElement('div');
@@ -191,10 +209,16 @@ function renderHands(showDealerCard = false) {
             cardEl.textContent = card.value + card.suit;
         }
 
+        if (animateDealer && (index === dealerHand.length - 1)) {
+            cardEl.style.transition = 'transform 0.6s ease';
+            setTimeout(() => {
+                cardEl.style.transform = 'rotateY(360deg)';
+            }, 200);
+        }
+
         dealerCardsEl.appendChild(cardEl);
     });
 
-    // Merender kartu pemain
     playerCardsEl.innerHTML = '';
     playerScoreEl.textContent = calculateScore(playerHand);
 
@@ -208,23 +232,37 @@ function renderHands(showDealerCard = false) {
             cardEl.style.cursor = 'pointer';
         }
 
+        if (animatePlayer && index === playerHand.length - 1) {
+            cardEl.style.transition = 'transform 0.6s ease';
+            setTimeout(() => {
+                cardEl.style.transform = 'rotateY(360deg)';
+            }, 50);
+        }
+
         playerCardsEl.appendChild(cardEl);
     });
 }
 
-// Mengakhiri permainan
-function endGame(msg, playerWins) {
+function endGame(msg) {
     gameOver = true;
-    messageEl.textContent = msg;
+    setTimeout(() => {
+        messageEl.textContent = msg;
+    }, 500);
+
 
     hitBtn.disabled = true;
     standBtn.disabled = true;
-    dealBtn.disabled = false;
     calculusBtn.disabled = true;
     disablePowerups();
+
+    // Tambahkan delay 1 detik sebelum membuka modal hasil game
+    setTimeout(() => {
+        openStartModal(false, msg);
+    }, 1000); // 1000 ms = 1 detik
 }
 
-// Fungsi untuk menampilkan soal kalkulus
+
+
 function showCalculusQuestion() {
     if (calculusBtnUsed || gameOver) return;
 
@@ -235,29 +273,40 @@ function showCalculusQuestion() {
     calculusAnswerEl.focus();
 }
 
-// Fungsi untuk menutup modal
 function closeModal() {
     calculusModal.style.display = 'none';
 }
 
-// Fungsi untuk memeriksa jawaban kalkulus
 function checkCalculusAnswer() {
     const userAnswer = calculusAnswerEl.value.trim().toLowerCase();
-    const correctAnswer = calculusQuestions.find(q => q.question === calculusQuestionEl.textContent).answer.toLowerCase();
+    const currentQuestion = calculusQuestions.find(q => q.question === calculusQuestionEl.textContent);
+    const correctAnswer = currentQuestion.answer.toLowerCase();
+
+    calculusBtn.disabled = true;
+    updateCalculusBtnState();
 
     if (userAnswer === correctAnswer) {
         messageEl.textContent = "Benar! Pilih salah satu powerup!";
         enablePowerups();
-        calculusBtnUsed = true;
-        calculusBtn.disabled = true;
+        closeModal();  // tutup modal soal
     } else {
-        messageEl.textContent = "Salah! Coba lagi lain kali.";
-    }
 
+        showExplanationPopup(
+            `Jawaban kamu kurang tepat.<br><br>` +
+            `<b>Soal:</b> ${currentQuestion.question}<br>` +
+            `<b>Jawaban benar:</b> ${currentQuestion.answer}<br><br>` +
+            `Penjelasan: ${currentQuestion.explanation || "Tidak ada penjelasan tambahan."}`
+        );
+    }
+}
+
+
+function closeExplanationPopup() {
+    document.getElementById('explanation-popup').style.display = 'none';
     closeModal();
 }
 
-// Fungsi untuk mengaktifkan powerups
+
 function enablePowerups() {
     const powerupCards = document.querySelectorAll('.powerup-card');
     powerupCards.forEach(card => {
@@ -271,7 +320,6 @@ function enablePowerups() {
     };
 }
 
-// Fungsi untuk menonaktifkan powerups
 function disablePowerups() {
     const powerupCards = document.querySelectorAll('.powerup-card');
     powerupCards.forEach(card => {
@@ -284,51 +332,61 @@ function disablePowerups() {
         remove: false
     };
 }
+function showExplanationPopup(message) {
+    document.getElementById('explanation-message').innerHTML = message;
+    document.getElementById('explanation-popup').style.display = 'flex';
+}
 
-// Fungsi untuk menggunakan powerup
+
 function usePowerup(type) {
-    if (!powerups[type] || gameOver) return;
+    if (powerupUsedThisTurn) return;
+
+    powerupUsedThisTurn = true;
+
+    // Disable semua powerup dan tampilannya
+    powerups = { peek: false, choose: false, remove: false };
+    document.querySelectorAll('.powerup-card').forEach(card => {
+        card.classList.add('disabled');
+    });
 
     switch (type) {
         case 'peek':
-            // Lihat kartu lawan
             renderHands(true);
             setTimeout(() => {
                 renderHands(false);
-                powerups.peek = false;
-                document.querySelector('.powerup-card:nth-child(1)').classList.add('disabled');
             }, 2000);
             break;
 
         case 'choose':
-            // Pilih dari 2 kartu
             const card1 = dealCard();
             const card2 = dealCard();
-
             const choice = confirm(`Pilih salah satu kartu:\n1. ${card1.value + card1.suit}\n2. ${card2.value + card2.suit}\n\nKlik OK untuk kartu pertama, Cancel untuk kartu kedua`);
-
             playerHand.push(choice ? card1 : card2);
             renderHands();
 
-            powerups.choose = false;
-            document.querySelector('.powerup-card:nth-child(2)').classList.add('disabled');
-
-            // Cek jika bust setelah menambah kartu
             if (calculateScore(playerHand) > 21) {
                 endGame("Anda bust! Dealer menang.", false);
             }
             break;
 
         case 'remove':
-            // Hapus kartu milik sendiri
             messageEl.textContent = "Klik kartu yang ingin dihapus";
-            powerups.remove = true;
+            powerups.remove = true; // izinkan pengguna klik kartu, tapi sudah tidak bisa pilih powerup lain
             renderHands();
             break;
     }
 }
 
-// Fungsi untuk menghapus kartu
+
+function updateCalculusBtnState() {
+    if (!calculusBtn.disabled) {
+        calculusBtn.classList.add('active');
+    } else {
+        calculusBtn.classList.remove('active');
+    }
+}
+
+
 function removeCard(index) {
     if (!powerups.remove) return;
 
@@ -339,5 +397,53 @@ function removeCard(index) {
     messageEl.textContent = "Kartu telah dihapus";
 }
 
-// Inisialisasi saat halaman dimuat
-window.onload = init;
+const startModal = document.getElementById('start-modal');
+const startModalTitle = document.getElementById('start-modal-title');
+const startGameBtn = document.getElementById('start-game-btn');
+
+function openStartModal(isNewGame = true, resultMessage = "") {
+    const modalBox = document.querySelector('.modal-box');
+
+    if (isNewGame) {
+        startModalTitle.textContent = "Selamat datang di Blackjack Kalkulus";
+        startGameBtn.textContent = "Mulai Game";
+        document.getElementById('start-modal-result').textContent = "";
+        modalBox.style.backgroundColor = "#1E90FF"; // biru
+    } else {
+        startModalTitle.textContent = "Game selesai!";
+        startGameBtn.textContent = "Main Lagi";
+        document.getElementById('start-modal-result').textContent = resultMessage;
+
+        const lowerMsg = resultMessage.toLowerCase();
+
+        if (lowerMsg.includes("anda menang")) {
+            modalBox.style.backgroundColor = "#28a745"; // hijau - menang
+        } else if (lowerMsg.includes("dealer menang") || lowerMsg.includes("anda bust")) {
+            modalBox.style.backgroundColor = "#dc3545"; // merah - kalah
+        } else {
+            modalBox.style.backgroundColor = "#1E90FF"; // biru - seri
+        }
+    }
+
+    // Tampilkan modal dan nonaktifkan tombol
+    startModal.style.display = 'flex';
+    hitBtn.disabled = true;
+    standBtn.disabled = true;
+}
+
+
+
+// Event listener tombol modal
+startGameBtn.addEventListener('click', () => {
+    startModal.style.display = 'none';
+    deal();
+    hitBtn.disabled = false;
+    standBtn.disabled = false;
+});
+
+window.onload = function () {
+    init();
+    openStartModal(true);
+}
+
+
