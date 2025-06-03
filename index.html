@@ -17,14 +17,11 @@
         <button id="start-game-btn">Mulai Game</button>
     </div>
 </div>
-
-
     <div class="container">
 
         <div class="game-area">
             <div>
                 <h2>Dealer</h2>
-
                 <div class="cards" id="dealer-cards"></div>
             </div>
                 <div class="score">Skor: <span id="dealer-score">?</span></div>
@@ -37,7 +34,7 @@
             </div>
 
             <div class="powerup-cards" id="powerups">
-                <div class="powerup-card" onclick="usePowerup('peek')">Lihat Kartu Lawan</div>
+                <div class="powerup-card" onclick="usePowerup('peek');">Lihat Kartu Lawan</div>
                 <div class="powerup-card" onclick="usePowerup('choose')">Pilih dari 2 Kartu</div>
                 <div class="powerup-card" onclick="usePowerup('remove')">Hapus Kartu</div>
             </div>
@@ -46,7 +43,7 @@
             </div>
             <div class="buttons">
                 <button id="hit" onclick="hit()">Hit</button>
-                <button id="stand" onclick="stand()">Stand</button>
+                <button id="stand" onclick="stand();">Stand</button>
             </div>
         </div>
     </div>
@@ -56,12 +53,11 @@
             <input type="text" id="calculus-answer" placeholder="Jawaban Anda...">
             <button onclick="checkCalculusAnswer()">Submit</button>
         </div>
-        <!-- Pop-up Penjelasan Jawaban Salah -->
         <div class="popup-overlay" id="explanation-popup" style="display:none;">
             <div class="popup-box">
                 <h2>Jawaban Salah</h2>
                 <p id="explanation-message"></p>
-                <button onclick="closeExplanationPopup()">Tutup</button>
+                <button onclick="closeExplanationPopup();"">Tutup</button>
             </div>
         </div>
 

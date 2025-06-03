@@ -104,7 +104,7 @@ function hit() {
     if (gameOver) return;
 
     playerHand.push(dealCard());
-    renderHands(false, true, false); // player animasi saat hit
+    renderHands(false, true, false);
 
 
     const playerScore = calculateScore(playerHand);
@@ -122,6 +122,7 @@ function hit() {
 }
 
 function stand() {
+    window.scrollTo(0,0);
     powerupUsedThisTurn = false;
     if (gameOver) return;
 
@@ -134,7 +135,7 @@ function stand() {
         dealerHand.push(dealCard());
     }
 
-    renderHands(true, false, true); // dealer animasi akhir
+    renderHands(true, false, true);
 
 
     const dealerScore = calculateScore(dealerHand);
@@ -244,6 +245,7 @@ function renderHands(showDealerCard = false, animatePlayer = false, animateDeale
 }
 
 function endGame(msg) {
+    window.scrollTo(0,0);
     gameOver = true;
     setTimeout(() => {
         messageEl.textContent = msg;
@@ -255,10 +257,9 @@ function endGame(msg) {
     calculusBtn.disabled = true;
     disablePowerups();
 
-    // Tambahkan delay 1 detik sebelum membuka modal hasil game
     setTimeout(() => {
         openStartModal(false, msg);
-    }, 1000); // 1000 ms = 1 detik
+    }, 1500);
 }
 
 
@@ -288,7 +289,7 @@ function checkCalculusAnswer() {
     if (userAnswer === correctAnswer) {
         messageEl.textContent = "Benar! Pilih salah satu powerup!";
         enablePowerups();
-        closeModal();  // tutup modal soal
+        closeModal();
     } else {
 
         showExplanationPopup(
@@ -343,7 +344,6 @@ function usePowerup(type) {
 
     powerupUsedThisTurn = true;
 
-    // Disable semua powerup dan tampilannya
     powerups = { peek: false, choose: false, remove: false };
     document.querySelectorAll('.powerup-card').forEach(card => {
         card.classList.add('disabled');
@@ -351,6 +351,7 @@ function usePowerup(type) {
 
     switch (type) {
         case 'peek':
+            window.scrollTo(0,0);
             renderHands(true);
             setTimeout(() => {
                 renderHands(false);
@@ -371,7 +372,7 @@ function usePowerup(type) {
 
         case 'remove':
             messageEl.textContent = "Klik kartu yang ingin dihapus";
-            powerups.remove = true; // izinkan pengguna klik kartu, tapi sudah tidak bisa pilih powerup lain
+            powerups.remove = true;
             renderHands();
             break;
     }
@@ -408,7 +409,7 @@ function openStartModal(isNewGame = true, resultMessage = "") {
         startModalTitle.textContent = "Selamat datang di Blackjack Kalkulus";
         startGameBtn.textContent = "Mulai Game";
         document.getElementById('start-modal-result').textContent = "";
-        modalBox.style.backgroundColor = "#1E90FF"; // biru
+        modalBox.style.backgroundColor = "#1E90FF";
     } else {
         startModalTitle.textContent = "Game selesai!";
         startGameBtn.textContent = "Main Lagi";
@@ -417,15 +418,15 @@ function openStartModal(isNewGame = true, resultMessage = "") {
         const lowerMsg = resultMessage.toLowerCase();
 
         if (lowerMsg.includes("anda menang")) {
-            modalBox.style.backgroundColor = "#28a745"; // hijau - menang
+            modalBox.style.backgroundColor = "#28a745";
         } else if (lowerMsg.includes("dealer menang") || lowerMsg.includes("anda bust")) {
-            modalBox.style.backgroundColor = "#dc3545"; // merah - kalah
+            modalBox.style.backgroundColor = "#dc3545";
         } else {
-            modalBox.style.backgroundColor = "#1E90FF"; // biru - seri
+            modalBox.style.backgroundColor = "#1E90FF";
         }
     }
 
-    // Tampilkan modal dan nonaktifkan tombol
+
     startModal.style.display = 'flex';
     hitBtn.disabled = true;
     standBtn.disabled = true;
@@ -433,7 +434,6 @@ function openStartModal(isNewGame = true, resultMessage = "") {
 
 
 
-// Event listener tombol modal
 startGameBtn.addEventListener('click', () => {
     startModal.style.display = 'none';
     deal();
