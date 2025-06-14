@@ -259,7 +259,7 @@ function endGame(msg) {
 
     setTimeout(() => {
         openStartModal(false, msg);
-    }, 1500);
+    }, 2000);
 }
 
 

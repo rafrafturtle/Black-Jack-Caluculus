@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Kalkulator Turunan Polinomial</title>
+      <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style3.css">
+</head>
+
+<body>
+      <div class="w3-sidebar">
+    <div class="sidebar-header">
+      <img src="https://png.pngtree.com/png-vector/20221114/ourmid/pngtree-fx-icon-sign-camera-vector-png-image_34640908.png" alt="Logo" class="sidebar-logo" />
+      <h2>Calculus</h2>
+    </div>
+    <nav class="sidebar-menu">
+      <a href="home.html">MATERI</a>
+      <a href="kalkulator.html" id="title-focus">KALKULATOR TURUNAN</a>
+      <a href="blackjack.html">RANDOM QUIZ</a>
+      <a href="about.html">ABOUT</a>
+    </nav>
+  </div>
+    <div class="calculator">
+        <h2>Kalkulator Turunan Polinomial</h2>
+
+        <input type="text" id="display" placeholder="Contoh: 3x^2 + 2x - 5" readonly>
+
+        <div class="derivative-controls">
+          <p>Turunan ke- </p>
+            <select id="derivativeOrder" class="derivative-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+
+        <div class="buttons">
+            <button onclick="clearDisplay()" class="clear">C</button>
+            <button onclick="backspace()">⌫</button>
+            <button onclick="append('^')" class="operator">^</button>
+            <button onclick="append('x')" class="operator">x</button>
+
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button onclick="append('+')" class="operator">+</button>
+
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button onclick="append('-')" class="operator">-</button>
+
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button onclick="calculateDerivative()" class="equals">Turunkan</button>
+
+            <button onclick="append('0')">0</button>
+            <button onclick="append('.')">.</button>
+            <button onclick="append('(')">(</button>
+            <button onclick="append(')')">)</button>
+        </div>
+
+        <div id="result">Hasil turunan akan muncul di sini</div>
+    </div>
+    <script src="script3.js"></script>
+</body>
+</html>
