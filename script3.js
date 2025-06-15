@@ -14,7 +14,6 @@
     
     function calculateDerivative() {
       const expression = document.getElementById('display').value;
-      const order = parseInt(document.getElementById('derivativeOrder').value);
       
       if (!expression) {
         document.getElementById('result').innerHTML = 'Masukkan ekspresi terlebih dahulu';
@@ -27,7 +26,7 @@
         
           currentExpr = findDerivative(currentExpr);
           const formatted = formatWithSuperscript(currentExpr);
-          results.push(`f<sup>${i}</sup>(x) = ${formatted}`);
+          results.push(`f(x) = ${formatted}`);
           
           
         
