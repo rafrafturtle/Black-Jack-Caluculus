@@ -9,7 +9,18 @@
     font-family: 'Open Sans', sans-serif;
     background-image: url(https://m.media-amazon.com/images/I/51TThUHm8XL.jpg);
   }
+.highlight-box{
+  color: #2563eb;
+  font-size: xx-large;
+  background-color:black;
+  padding: 50px;
+  border-radius: 20px;
+}
 
+.answer-box{
+  color: #039e63;
+  font-size: 1.5rem;
+}
   .w3-sidebar {
     position: fixed;
     top: 0;
@@ -85,98 +96,147 @@
   }
 
   .materi-container-wrapper {
-    margin-left: 240px;
+    margin-left: 25%;
     padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .slide {
-    display: none;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  .slide.aktif {
-    display: block;
   }
 
   section {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 2rem;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-  }
+  background: linear-gradient(to bottom right, #ffffff, #f3f4f6);
+  border-radius: 1.25rem;
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  max-width: 1000px;
+  width: 100%;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-  h2 {
-    margin-top: 0;
-    font-size: 1.75rem;
-    color: #111827;
-  }
+section:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+}
 
-  p,
-  li {
-    color: #374151;
-    line-height: 1.6;
-  }
+section h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  font-weight: 700;
+  border-bottom: 2px solid #60a5fa;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
 
-  code {
-    background-color: #e5e7eb;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: monospace;
-  }
+section p {
+  font-size: 1.1rem;
+  color: #374151;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
 
-  input[type="text"],
-  select {
-    width: 100%;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    font-size: 1.5rem;
-    border: 2px solid #4b5563;
-    border-radius: 0.5rem;
-    background-color: #ffffff;
-    font-family: 'Courier New', Courier, monospace;
-  }
+section ul,
+section ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
 
-  button {
-    background-color: #2563eb;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
+section li {
+  margin-bottom: 0.75rem;
+  color: #4b5563;
+  font-size: 1.05rem;
+}
 
-  button:hover {
-    background-color: #1d4ed8;
-  }
+section .rumus {
+  background-color: #eff6ff;
+  border-left: 4px solid #2563eb;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
+  font-family: 'Courier New', Courier, monospace;
+  color: #1e3a8a;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+body {
+  background-color: #2d3748;
+  color: #ffffff;
+  font-family: 'Open Sans', sans-serif;
+}
 
-  .navigasi {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 600px;
-    margin-top: 1.5rem;
-  }
+.quiz-container-1, .quiz-container-2 {
+  background-color: #2d3748;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 6rem;
+}
 
-  @media (max-width: 768px) {
-    .materi-container-wrapper {
-      margin-left: 0;
-      padding: 1rem;
-    }
+.quiz-container-1 h2,
+.quiz-container-2 h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #ffffff;
+}
 
-    .navigasi {
-      flex-direction: column;
-      gap: 1rem;
-      align-items: center;
-    }
+.quiz-container-1 p,
+.quiz-container-2 p {
+  font-size: 1.1rem;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
 
-    .slide {
-      width: 100%;
-    }
-  }
+.choice {
+  background-color: #4a5568;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.choice:hover {
+  background-color: #5a667b;
+}
+
+.choice input {
+  margin-right: 10px;
+}
+
+button{
+  background-color: #04AA6D;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: block;
+  margin: 20px auto 0;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #039e63;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+
+

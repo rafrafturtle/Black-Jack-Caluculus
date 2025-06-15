@@ -1,0 +1,36 @@
+{
+  "questions": [
+    {
+      "text": "Manakah dari fungsi berikut yang bukan fungsi polinomial?",
+      "choices": [
+        "f(x) = 3x² + 2x + 1",
+        "f(x) = sin(x)",
+        "f(x) = 5x⁴ - x + 7",
+        "f(x) = 7"
+      ],
+      "correctIndex": 1,
+      "explanations": [
+        "Ini adalah fungsi polinomial biasa.",
+        "Benar. Fungsi sinus bukan polinomial.",
+        "Ini adalah fungsi polinomial biasa.",
+        "Ini adalah fungsi konstan, yang termasuk polinomial."
+      ]
+    },
+    {
+      "text": "Turunan dari f(x) = 4x³ - 2x² + x - 7 adalah...",
+      "choices": [
+        "f'(x) = 12x² - 4x + 1",
+        "f'(x) = 4x² - 4x + 1",
+        "f'(x) = 12x² + 4x + 1",
+        "f'(x) = 12x³ - 2x + 1"
+      ],
+      "correctIndex": 0,
+      "explanations": [
+        "Benar. Turunan masing-masing suku: 12x² - 4x + 1.",
+        "Salah, ini mengurangi koefisien dengan keliru.",
+        "Salah, ini menjumlahkan bukan mengurangkan.",
+        "Salah, eksponennya keliru saat menurunkan."
+      ]
+    }
+  ]
+}

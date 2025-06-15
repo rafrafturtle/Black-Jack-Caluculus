@@ -1,14 +1,33 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getDatabase, get, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBG6YZQUUVoYAnqvItx4jXZM_O2XNBAG0Q",
+    authDomain: "praktikum9-508a3.firebaseapp.com",
+    databaseURL: "https://praktikum9-508a3-default-rtdb.firebaseio.com",
+    projectId: "praktikum9-508a3",
+    storageBucket: "praktikum9-508a3.appspot.com",
+    messagingSenderId: "773024358158",
+    appId: "1:773024358158:web:64d302b39c889bf2ab415f"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const scoresRef = ref(database, 'scores');
+
+
+
 let suits = [];
 let values = [];
-let calculusQuestions = [];
 let powerupUsedThisTurn = false;
+let playerScore = 0;
 
 fetch('gameData.json')
     .then(response => response.json())
     .then(data => {
         suits = data.deck.suits;
         values = data.deck.values;
-        calculusQuestions = data.calculusQuestions;
         init();
     })
     .catch(error => {
@@ -26,6 +45,15 @@ let powerups = {
     remove: false
 };
 
+
+
+let playerName = '';
+const scoreDisplayEl = document.getElementById('score-display');
+const nameModal = document.getElementById('name-modal');
+const playerNameInput = document.getElementById('player-name');
+const startWithNameBtn = document.getElementById('start-with-name');
+const leaderboardContent = document.getElementById('leaderboard-content');
+
 const dealerCardsEl = document.getElementById('dealer-cards');
 const playerCardsEl = document.getElementById('player-cards');
 const dealerScoreEl = document.getElementById('dealer-score');
@@ -33,9 +61,7 @@ const playerScoreEl = document.getElementById('player-score');
 const messageEl = document.getElementById('message');
 const hitBtn = document.getElementById('hit');
 const standBtn = document.getElementById('stand');
-const dealBtn = document.getElementById('deal');
 const calculusBtn = document.getElementById('calculus-btn');
-const powerupsEl = document.getElementById('powerups');
 const calculusModal = document.getElementById('calculus-modal');
 const calculusQuestionEl = document.getElementById('calculus-question');
 const calculusAnswerEl = document.getElementById('calculus-answer');
@@ -87,9 +113,7 @@ function deal() {
     } else {
         hitBtn.disabled = false;
         standBtn.disabled = false;
-        dealBtn.disabled = true;
     }
-
     disablePowerups();
 
 
@@ -122,11 +146,14 @@ function hit() {
 }
 
 function stand() {
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
     powerupUsedThisTurn = false;
+
+    
+    powerups.remove = false;
+
     if (gameOver) return;
 
-    gameOver = true;
     hitBtn.disabled = true;
     standBtn.disabled = true;
     calculusBtn.disabled = true;
@@ -136,7 +163,6 @@ function stand() {
     }
 
     renderHands(true, false, true);
-
 
     const dealerScore = calculateScore(dealerHand);
     const playerScore = calculateScore(playerHand);
@@ -150,11 +176,13 @@ function stand() {
     } else {
         endGame("Seri!", true);
     }
+
     if (!calculusBtnUsed && !gameOver) {
         calculusBtn.disabled = false;
         updateCalculusBtnState();
     }
 }
+
 
 function calculateScore(hand) {
     let score = 0;
@@ -181,7 +209,7 @@ function calculateScore(hand) {
 
 function renderHands(showDealerCard = false, animatePlayer = false, animateDealer = false) {
     dealerCardsEl.innerHTML = '';
-    
+
     if (showDealerCard || powerups.peek) {
         dealerScoreEl.textContent = calculateScore(dealerHand);
     } else {
@@ -244,63 +272,217 @@ function renderHands(showDealerCard = false, animatePlayer = false, animateDeale
     });
 }
 
-function endGame(msg) {
-    window.scrollTo(0,0);
-    gameOver = true;
-    setTimeout(() => {
-        messageEl.textContent = msg;
-    }, 500);
+
+function handleNameInput() {
+    startWithNameBtn.addEventListener('click', () => {
+        playerName = playerNameInput.value.trim();
+        if (playerName === '') {
+            alert('Silakan masukkan nama Anda!');
+            return;
+        }
+        nameModal.style.display = 'none';
+        openStartModal(true);
+    });
+}
 
 
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
-    calculusBtn.disabled = true;
-    disablePowerups();
+function loadLeaderboard() {
+    onValue(scoresRef, (snapshot) => {
+        const scores = snapshot.val();
+        leaderboardContent.innerHTML = '';
 
-    setTimeout(() => {
-        openStartModal(false, msg);
-    }, 2000);
+        if (!scores) {
+            leaderboardContent.innerHTML = '<p>Belum ada skor tersimpan</p>';
+            return;
+        }
+
+        
+        const scoresArray = Object.entries(scores).map(([id, score]) => ({
+            id,
+            ...score
+        })).sort((a, b) => b.score - a.score);
+
+        
+        scoresArray.slice(0, 10).forEach((item, index) => {
+            const scoreItem = document.createElement('div');
+            scoreItem.className = 'leaderboard-item';
+            scoreItem.innerHTML = `
+                <span>${index + 1}. ${item.name}</span>
+                <span>${item.score}</span>
+            `;
+            leaderboardContent.appendChild(scoreItem);
+        });
+    });
+}
+
+function saveScore() {
+    if (!playerName || playerScore <= 0) return;
+
+    get(scoresRef).then(snapshot => {
+        const scores = snapshot.val();
+        let found = false;
+
+        
+        if (scores) {
+            Object.entries(scores).forEach(([key, data]) => {
+                if (data.name.toLowerCase() === playerName.toLowerCase()) {
+                    found = true;
+                    if (playerScore > data.score) {
+                        update(ref(db, 'scores/' + key), {
+                            score: playerScore,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+            });
+        }
+
+        if (!found) {
+            const newScoreRef = push(scoresRef);
+            set(newScoreRef, {
+                name: playerName,
+                score: playerScore,
+                timestamp: new Date().toISOString()
+            });
+        }
+    }).catch(error => {
+        console.error("Gagal menyimpan skor:", error);
+    });
 }
 
 
 
+function endGame(msg, isWin) {
+    window.scrollTo(0, 0);
+    gameOver = true;
+
+    if (!isWin){
+        saveScore(); 
+    }
+    updateScoreDisplay();
+    messageEl.textContent = msg;
+
+    
+    setTimeout(() => {
+        openStartModal(false, msg);
+    }, 1500);
+}
+
+
+
+const calculusQuestions = [];
+let currentCalculusQuestion = null;
+
 function showCalculusQuestion() {
+    generateCalculusQuestions();
     if (calculusBtnUsed || gameOver) return;
 
     const randomQuestion = calculusQuestions[Math.floor(Math.random() * calculusQuestions.length)];
-    calculusQuestionEl.textContent = randomQuestion.question;
-    calculusAnswerEl.value = '';
+    currentCalculusQuestion = randomQuestion;
+    calculusQuestionEl.innerHTML = randomQuestion.question;
+
+    const correct = randomQuestion.answer;
+    const fakeAnswers = new Set();
+    while (fakeAnswers.size < 3) {
+        let variation = correct.replace(/\d+/g, num => {
+            const n = parseInt(num);
+            const rand = n + Math.floor(Math.random() * 3) - 1;
+            return rand < 0 ? 0 : rand;
+        });
+        if (variation !== correct) fakeAnswers.add(variation);
+    }
+
+    const allAnswers = [...fakeAnswers, correct];
+    shuffleArray(allAnswers);
+
+    const choicesContainer = document.getElementById('calculus-choices');
+    choicesContainer.innerHTML = '';
+    allAnswers.forEach(answer => {
+        const btn = document.createElement('button');
+        btn.innerHTML = answer;
+        btn.onclick = () => checkChoiceAnswer(answer, correct);
+        choicesContainer.appendChild(btn);
+    });
+
     calculusModal.style.display = 'flex';
-    calculusAnswerEl.focus();
+}
+
+function checkChoiceAnswer(selected, correct) {
+    calculusBtn.disabled = true;
+    updateCalculusBtnState();
+
+    if (selected === correct) {
+        playerScore += 100;
+        updateScoreDisplay();
+        messageEl.textContent = "Benar! +100 poin! Pilih salah satu powerup!";
+        enablePowerups();
+        closeModal();
+    } else {
+        showExplanationPopup(
+            `Jawaban kamu kurang tepat.<br><br>` +
+            `<b>Soal:</b> ${currentCalculusQuestion.question}<br>` +
+            `<b>Jawaban benar:</b> ${correct}<br><br>` +
+            `Penjelasan: ${currentCalculusQuestion.explanation || "Tidak ada penjelasan tambahan."}`
+        );
+    }
 }
 
 function closeModal() {
     calculusModal.style.display = 'none';
 }
 
-function checkCalculusAnswer() {
-    const userAnswer = calculusAnswerEl.value.trim().toLowerCase();
-    const currentQuestion = calculusQuestions.find(q => q.question === calculusQuestionEl.textContent);
-    const correctAnswer = currentQuestion.answer.toLowerCase();
+function generateCalculusQuestions(count = 20) {
+    const formats = [
+        (a1, n1, a2, n2) => ({
+            question: `Turunan dari f(x) = x<sup>${n1}</sup> + ${a1}x<sup>${n2}</sup>`,
+            answer: `f'(x) = ${n1}x<sup>${n1 - 1}</sup> + ${a1 * n2}x<sup>${n2 - 1}</sup>`,
+            explanation: `Turunan dari x<sup>${n1}</sup> adalah ${n1}x<sup>${n1 - 1}</sup>, dan turunan dari ${a1}x<sup>${n2}</sup> adalah ${a1 * n2}x<sup>${n2 - 1}</sup>.`
+        }),
+        (a1, n1, a2) => ({
+            question: `Turunan dari f(x) = ${a1}x<sup>${n1}</sup> + x<sup>${n1}</sup> + ${a2}x`,
+            answer: `f'(x) = ${(a1 + 1) * n1}x<sup>${n1 - 1}</sup> + ${a2}`,
+            explanation: `Gabungan dari dua suku berpangkat ${n1} menjadi ${(a1 + 1) * n1}x<sup>${n1 - 1}</sup>, dan turunan dari ${a2}x adalah ${a2}.`
+        }),
+        (a1, n1, a2, n2, a3, n3) => ({
+            question: `Turunan Dari f(x) = x<sup>${n1}</sup> + ${a1}x<sup>${n2}</sup> + ${a2}x<sup>${n3}</sup>`,
+            answer: `f'(x) = ${n1}x<sup>${n1 - 1}</sup> + ${a1 * n2}x<sup>${n2 - 1}</sup> + ${a2 * n3}x<sup>${n3 - 1}</sup>`,
+            explanation: `Turunan dilakukan pada tiap suku.`
+        }),
+    ];
 
-    calculusBtn.disabled = true;
-    updateCalculusBtnState();
+    calculusQuestions.length = 0;
+    for (let i = 0; i < count; i++) {
+        const formatIndex = Math.floor(Math.random() * formats.length);
+        const f = formats[formatIndex];
 
-    if (userAnswer === correctAnswer) {
-        messageEl.textContent = "Benar! Pilih salah satu powerup!";
-        enablePowerups();
-        closeModal();
-    } else {
+        const a1 = Math.floor(Math.random() * 20) + 1;
+        const a2 = Math.floor(Math.random() * 20) + 1;
+        const a3 = Math.floor(Math.random() * 20) + 1;
+        const n1 = Math.floor(Math.random() * 6) + 1;
+        const n2 = Math.floor(Math.random() * 6) + 1;
+        const n3 = Math.floor(Math.random() * 6) + 1;
 
-        showExplanationPopup(
-            `Jawaban kamu kurang tepat.<br><br>` +
-            `<b>Soal:</b> ${currentQuestion.question}<br>` +
-            `<b>Jawaban benar:</b> ${currentQuestion.answer}<br><br>` +
-            `Penjelasan: ${currentQuestion.explanation || "Tidak ada penjelasan tambahan."}`
-        );
+        let q;
+        if (formatIndex === 0) q = f(a1, n1, a2, n2);
+        else if (formatIndex === 1) q = f(a1, n1, a2);
+        else q = f(a1, n1, a2, n2, a3, n3);
+
+        calculusQuestions.push(q);
     }
 }
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+
+
+function updateScoreDisplay() {
+    scoreDisplayEl.textContent = `Skor: ${playerScore}`;
+}
 
 function closeExplanationPopup() {
     document.getElementById('explanation-popup').style.display = 'none';
@@ -351,7 +533,7 @@ function usePowerup(type) {
 
     switch (type) {
         case 'peek':
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
             renderHands(true);
             setTimeout(() => {
                 renderHands(false);
@@ -359,14 +541,24 @@ function usePowerup(type) {
             break;
 
         case 'choose':
-            const card1 = dealCard();
-            const card2 = dealCard();
-            const choice = confirm(`Pilih salah satu kartu:\n1. ${card1.value + card1.suit}\n2. ${card2.value + card2.suit}\n\nKlik OK untuk kartu pertama, Cancel untuk kartu kedua`);
-            playerHand.push(choice ? card1 : card2);
-            renderHands();
+            const cards = [dealCard(), dealCard(), dealCard(), dealCard(), dealCard()];
+            let message = "Pilih salah satu kartu:\n";
+            cards.forEach((card, i) => {
+                message += `${i + 1}. ${card.value + card.suit}\n`;
+            });
 
-            if (calculateScore(playerHand) > 21) {
-                endGame("Anda bust! Dealer menang.", false);
+            let choiceIndex = prompt(message + "\nKetik angka 1-5 untuk memilih:");
+            choiceIndex = parseInt(choiceIndex) - 1;
+
+            if (choiceIndex >= 0 && choiceIndex < 5) {
+                playerHand.push(cards[choiceIndex]);
+                renderHands();
+
+                if (calculateScore(playerHand) > 21) {
+                    endGame("Anda bust! Dealer menang.", false);
+                }
+            } else {
+                alert("Pilihan tidak valid. Tidak ada kartu yang ditambahkan.");
             }
             break;
 
@@ -403,47 +595,72 @@ const startModalTitle = document.getElementById('start-modal-title');
 const startGameBtn = document.getElementById('start-game-btn');
 
 function openStartModal(isNewGame = true, resultMessage = "") {
-    const modalBox = document.querySelector('.modal-box');
+    const modalBox = document.querySelector('#start-modal .modal-box');
+
+    
+    modalBox.classList.remove('default-state', 'win-state', 'lose-state', 'draw-state');
 
     if (isNewGame) {
         startModalTitle.textContent = "Selamat datang di Blackjack Kalkulus";
         startGameBtn.textContent = "Mulai Game";
         document.getElementById('start-modal-result').textContent = "";
-        modalBox.style.backgroundColor = "#1E90FF";
+        modalBox.classList.add('default-state');
     } else {
-        startModalTitle.textContent = "Game selesai!";
         startGameBtn.textContent = "Main Lagi";
         document.getElementById('start-modal-result').textContent = resultMessage;
+        document.getElementById('game-explanation').style.display = 'none';
 
         const lowerMsg = resultMessage.toLowerCase();
 
         if (lowerMsg.includes("anda menang")) {
-            modalBox.style.backgroundColor = "#28a745";
+            startModalTitle.innerHTML = "Game berlanjut!<br>dapatkan skor setinggi mungkin!";
+            startGameBtn.textContent = "Lanjut";
+            modalBox.classList.add('win-state');
         } else if (lowerMsg.includes("dealer menang") || lowerMsg.includes("anda bust")) {
-            modalBox.style.backgroundColor = "#dc3545";
+            startModalTitle.innerHTML = "Game berakhir!<br>Skor disimpan ke leaderboard";
+            modalBox.classList.add('lose-state');
         } else {
-            modalBox.style.backgroundColor = "#1E90FF";
+            startModalTitle.innerHTML = "Game berakhir!<br>Skor disimpan ke leaderboard";
+            modalBox.classList.add('draw-state');
         }
     }
 
+    document.getElementById('start-modal').style.display = "flex";
 
-    startModal.style.display = 'flex';
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
+
+    
+    document.getElementById('start-modal').style.display = 'flex';
+    document.getElementById('hit').disabled = true;
+    document.getElementById('stand').disabled = true;
 }
 
 
+window.onload = function () {
+    init();
+    handleNameInput();
+    loadLeaderboard();
+    
+    nameModal.style.display = 'flex';
+    startModal.style.display = 'none';
+}
+
+
+window.showCalculusQuestion = showCalculusQuestion;
+window.usePowerup = usePowerup;
+window.closeExplanationPopup = closeExplanationPopup;
+window.deal = deal;
+window.hit = hit;
+window.stand = stand;
 
 startGameBtn.addEventListener('click', () => {
     startModal.style.display = 'none';
     deal();
-    hitBtn.disabled = false;
-    standBtn.disabled = false;
 });
 
-window.onload = function () {
-    init();
-    openStartModal(true);
-}
-
-
+document.querySelectorAll('.powerup-card').forEach(card => {
+    card.addEventListener('click', function () {
+        const type = this.textContent.includes('Lihat') ? 'peek' :
+            this.textContent.includes('Pilih') ? 'choose' : 'remove';
+        usePowerup(type);
+    });
+});

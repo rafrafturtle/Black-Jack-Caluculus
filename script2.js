@@ -1,120 +1,86 @@
-// Hitung turunan pertama dari polinomial
-function tambahPangkat() {
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
+    let questions = [];
 
-  const range = sel.getRangeAt(0);
-  const sup = document.createElement("sup");
-  sup.innerHTML = " ";
-  range.insertNode(sup);
-  
-  // Pindahkan kursor ke dalam <sup>
-  const newRange = document.createRange();
-  newRange.selectNodeContents(sup);
-  newRange.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(newRange);
-}
+    fetch('soalMateri.json')
+      .then(response => response.json())
+      .then(data => {
+        questions = data.questions;
+        renderQuestion(0);
+        renderQuestion(1);
+      })
+      .catch(error => {
+        console.error("Gagal memuat soal:", error);
+      });
 
-function hitungTurunanPolinomial() {
-  const rawHtml = document.getElementById("polyInput").innerHTML;
-  const plainText = rawHtml
-    .replace(/<sup>(.*?)<\/sup>/g, "^$1")
-    .replace(/<div>/g, "")
-    .replace(/<\/div>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim();
+    function renderQuestion(index) {
+      const q = questions[index];
+      if (!q) return;
 
-  const hasil = hitungTurunan(plainText);
-  document.getElementById("polyResult").innerHTML = hasil || "Format tidak dikenali.";
-}
+      document.getElementById(`question-text-${index + 1}`).innerText = q.text;
+      const container = document.getElementById(`choices-container-${index + 1}`);
+      container.innerHTML = '';
 
-
-// Tampilkan turunan dari fungsi trigonometri
-function tampilkanTurunanTrigonometri() {
-  const fungsi = document.getElementById("trigFunc").value;
-  const turunan = {
-    "sin(x)": "cos(x)",
-    "cos(x)": "-sin(x)",
-    "tan(x)": "sec²(x)"
-  };
-  document.getElementById("trigResult").innerText = turunan[fungsi] || "-";
-}
-
-// Hitung turunan pertama dan kedua dari input
-function hitungTurunanKedua() {
-  const input = document.getElementById("secondInput").value;
-  const pertama = hitungTurunan(input);
-  const kedua = hitungTurunan(pertama);
-  document.getElementById("firstDeriv").innerText = pertama || "-";
-  document.getElementById("secondDeriv").innerText = kedua || "-";
-}
-
-// Fungsi utama untuk menghitung turunan dari ekspresi polinomial
-function hitungTurunan(ekspresi) {
-  if (!ekspresi) return null;
-
-  const suku = ekspresi.match(/([+-]?\s*\d*\s*x(\^\d+)?|[+-]?\s*\d+)/g);
-  if (!suku) return null;
-
-  const hasilTurunan = suku.map(bagian => {
-    bagian = bagian.replace(/\s+/g, '');
-
-    if (/x\^\d+/.test(bagian)) {
-      const [, koef = '1', pangkat] = bagian.match(/([+-]?\d*)x\^(\d+)/);
-      const k = parseFloat(koef === '+' || koef === '' ? 1 : (koef === '-' ? -1 : koef));
-      const p = parseInt(pangkat);
-      if (p === 0) return '0';
-
-      const newKoef = k * p;
-      const newPangkat = p - 1;
-
-      let term = '';
-      if (newKoef !== 0) {
-        term = (newKoef === 1 && newPangkat !== 0) ? '' : (newKoef === -1 && newPangkat !== 0 ? '-' : newKoef.toString());
-        if (newPangkat > 0) {
-          term += 'x';
-          if (newPangkat > 1) {
-            term += '<sup>' + newPangkat + '</sup>';
-          }
-        }
-      }
-      return term;
-
-    } else if (/x/.test(bagian)) {
-      const koef = bagian.replace('x', '');
-      const k = (koef === '' || koef === '+' ? 1 : (koef === '-' ? -1 : parseFloat(koef)));
-      return k.toString();
-    } else {
-      return '0';
-    }
-  }).filter(term => term !== '0' && term !== '');
-
-  if (hasilTurunan.length === 0) return '0';
-
-  let hasil = hasilTurunan.join(' + ').replace(/\+\s\-/g, '- ');
-  if (hasil.startsWith('+ ')) {
-    hasil = hasil.slice(2);
-  }
-
-  return hasil;
-}
-
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-
-    function showSlide(index) {
-      slides.forEach((slide, i) => {
-        slide.classList.toggle('aktif', i === index);
+      q.choices.forEach((choice, i) => {
+        const div = document.createElement('div');
+        div.className = 'choice';
+        div.innerHTML = `
+          <label>
+            <input type="radio" name="choice-${index}" value="${i}">
+            ${choice}
+          </label>
+        `;
+        container.appendChild(div);
       });
     }
 
-    function nextSlide() {
-      currentSlide = (currentSlide + 1) % slides.length;
-      showSlide(currentSlide);
+    function submitAnswer(index) {
+      const radios = document.getElementsByName(`choice-${index}`);
+      let selectedIndex = -1;
+      for (let i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+          selectedIndex = parseInt(radios[i].value);
+          break;
+        }
+      }
+
+      const feedback = document.getElementById(`feedback-${index + 1}`);
+      const explanation = document.getElementById(`explanation-${index + 1}`);
+
+      if (selectedIndex === -1) {
+        feedback.innerText = 'Silakan pilih salah satu jawaban.';
+        feedback.style.color = '#facc15';
+        explanation.innerText = '';
+        return;
+      }
+
+      const q = questions[index];
+
+      if (selectedIndex === q.correctIndex) {
+        feedback.innerText = 'Jawaban kamu benar!';
+        feedback.style.color = '#10b981';
+      } else {
+        feedback.innerText = 'Jawaban kamu masih salah.';
+        feedback.style.color = '#ef4444';
+      }
+
+      explanation.innerText = q.explanations[selectedIndex];
     }
 
-    function prevSlide() {
-      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-      showSlide(currentSlide);
-    }
+     document.querySelectorAll('section, .quiz-container-1, .quiz-container-2').forEach((el) => {
+    el.classList.add('reveal');
+  });
+
+  function revealOnScroll() {
+    const reveals = document.querySelectorAll('.reveal');
+    reveals.forEach((el) => {
+      const windowHeight = window.innerHeight;
+      const elementTop = el.getBoundingClientRect().top;
+      const revealPoint = 100;
+
+      if (elementTop < windowHeight - revealPoint) {
+        el.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', revealOnScroll);
+  window.addEventListener('load', revealOnScroll);
