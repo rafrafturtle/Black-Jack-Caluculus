@@ -2,59 +2,186 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Kalkulator Turunan Polinomial</title>
-      <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style3.css">
+  <meta charset="UTF-8">
+  <title>Kalkulator Turunan Polinomial</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style3.css">
+  <link rel="stylesheet" href="sidebar.css">
 </head>
 
 <body>
-      <div class="w3-sidebar">
+  <div class="w3-sidebar">
     <div class="sidebar-header">
-      <img src="https://png.pngtree.com/png-vector/20221114/ourmid/pngtree-fx-icon-sign-camera-vector-png-image_34640908.png" alt="Logo" class="sidebar-logo" />
-      <h2>Calculus</h2>
+      <img
+        src="https://png.pngtree.com/png-vector/20221114/ourmid/pngtree-fx-icon-sign-camera-vector-png-image_34640908.png"
+        alt="Logo" class="sidebar-logo" />
+      <h2>Turunanify</h2>
     </div>
     <nav class="sidebar-menu">
       <a href="home.html">MATERI</a>
       <a href="kalkulator.html" id="title-focus">KALKULATOR TURUNAN</a>
       <a href="blackjack.html">RANDOM QUIZ</a>
-      <a href="about.html">ABOUT</a>
+      <div class="comment-section">
+        <h3>Tinggalkan Komentar</h3>
+        <form id="comment-form">
+          <input type="text" id="name" placeholder="Nama Anda" required />
+          <textarea id="message" placeholder="Tulis komentar..." required></textarea>
+          <button type="submit">Kirim Komentar</button>
+        </form>
+
+        <div class="comments-display">
+          <h4>Komentar Terbaru:</h4>
+          <div class="comments-container" id="comments-container">
+            <!-- Komentar akan muncul di sini secara dinamis -->
+          </div>
+        </div>
+      </div>
     </nav>
   </div>
-    <div class="calculator">
-        <h2>Kalkulator Turunan Polinomial</h2>
+  
+  <div class="calculator">
+    <h2>Kalkulator Turunan Polinomial</h2>
 
-        <input type="text" id="display" placeholder="Contoh: 3x^2 + 2x - 5" readonly>
+    <input type="text" id="display" placeholder="Contoh: 3x^2 + 2x - 5" readonly>
 
-        <div class="buttons">
-            <button onclick="clearDisplay()" class="clear">C</button>
-            <button onclick="backspace()">⌫</button>
-            <button onclick="append('^')" class="operator">^</button>
-            <button onclick="append('x')" class="operator">x</button>
+    <div class="buttons">
+      <button onclick="clearDisplay()" class="clear">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="append('^')" class="operator">^</button>
+      <button onclick="append('x')" class="operator">x</button>
 
-            <button onclick="append('7')">7</button>
-            <button onclick="append('8')">8</button>
-            <button onclick="append('9')">9</button>
-            <button onclick="append('+')" class="operator">+</button>
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('+')" class="operator">+</button>
 
-            <button onclick="append('4')">4</button>
-            <button onclick="append('5')">5</button>
-            <button onclick="append('6')">6</button>
-            <button onclick="append('-')" class="operator">-</button>
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('-')" class="operator">-</button>
 
-            <button onclick="append('1')">1</button>
-            <button onclick="append('2')">2</button>
-            <button onclick="append('3')">3</button>
-            <button onclick="calculateDerivative()" class="equals">Turunkan</button>
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="calculateDerivative()" class="equals">Turunkan</button>
 
-            <button onclick="append('0')">0</button>
-            <button onclick="append('.')">.</button>
-            <button onclick="append('(')">(</button>
-            <button onclick="append(')')">)</button>
-        </div>
-
-        <div id="result">Hasil turunan akan muncul di sini</div>
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
     </div>
-    <script src="script3.js"></script>
+
+    <div id="result">Hasil turunan akan muncul di sini</div>
+  </div>
+  <script src="script3.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBG6YZQUUVoYAnqvItx4jXZM_O2XNBAG0Q",
+      authDomain: "praktikum9-508a3.firebaseapp.com",
+      databaseURL: "https://praktikum9-508a3-default-rtdb.firebaseio.com",
+      projectId: "praktikum9-508a3",
+      storageBucket: "praktikum9-508a3.appspot.com",
+      messagingSenderId: "773024358158",
+      appId: "1:773024358158:web:64d302b39c889bf2ab415f"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Control variables
+    let canComment = true;
+    const delayTime = 15 * 1000; // 15 seconds cooldown
+
+    // Load only verified comments (status: true)
+    function loadVerifiedComments() {
+      const commentsRef = ref(db, 'comments');
+      const verifiedQuery = query(commentsRef, orderByChild('verified'), equalTo(true));
+
+      onValue(verifiedQuery, (snapshot) => {
+        const commentsData = snapshot.val();
+        const container = document.getElementById('comments-container');
+        container.innerHTML = '';
+
+        if (commentsData) {
+          // Convert to array and sort by timestamp (newest first)
+          const commentsArray = Object.values(commentsData)
+            .sort((a, b) => b.timestamp - a.timestamp);
+
+          commentsArray.forEach(comment => {
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment-item';
+
+            // Format timestamp
+            const commentDate = new Date(comment.timestamp);
+            const timeString = commentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateString = commentDate.toLocaleDateString();
+
+            commentElement.innerHTML = `
+          <div class="comment-name">${comment.name}</div>
+          <div class="comment-text">${comment.message}</div>
+          <div class="comment-time">${dateString} ${timeString}</div>
+        `;
+
+            container.prepend(commentElement); // Add to top
+          });
+        } else {
+          container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Belum ada komentar</p>';
+        }
+      });
+    }
+
+    // Submit comment form
+    document.getElementById('comment-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const sendButton = document.querySelector('#comment-form button');
+
+      if (!canComment) {
+        return;
+      }
+
+      if (name && message) {
+        sendButton.disabled = true;
+        sendButton.textContent = "Mengirim...";
+
+        // Submit comment with verified: false by default
+        const commentRef = ref(db, 'comments');
+        push(commentRef, {
+          name,
+          message,
+          timestamp: Date.now(),
+          verified: false // Default to unverified
+        })
+          .then(() => {
+
+            document.getElementById('comment-form').reset();
+
+            // Cooldown timer
+            canComment = false;
+            setTimeout(() => {
+              canComment = true;
+            }, delayTime);
+          })
+          .catch((err) => {
+            console.error(err);
+          })
+          .finally(() => {
+            sendButton.disabled = false;
+            sendButton.textContent = "Kirim Komentar";
+          });
+      }
+    });
+
+    // Load verified comments when page loads
+    document.addEventListener('DOMContentLoaded', loadVerifiedComments);
+  </script>
+
 </body>
+
 </html>

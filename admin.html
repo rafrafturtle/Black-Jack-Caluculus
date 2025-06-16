@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <style>
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #0d1b2a;
+  color: #ecf0f1;
+  padding: 2rem;
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1, h2 {
+  color: gold;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3a5a80;
+}
+
+h1 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.8rem;
+  margin-top: 3rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: linear-gradient(145deg, #1a2a3a, #0d1b2a);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  margin-top: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #3a5a80;
+  margin-bottom: 10rem;
+}
+
+th, td {
+  padding: 1.2rem;
+  text-align: center;
+  border: 1px solid #2c3e50;
+}
+
+th {
+  background: linear-gradient(145deg, #1E90FF, #0d47a1);
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(26, 42, 58, 0.5);
+}
+
+tr:hover {
+  background-color: rgba(58, 90, 128, 0.3);
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  margin: 0.3rem;
+  border: none;
+  cursor: pointer;
+  color: white;
+  background-color: brown;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.reject { 
+  background: linear-gradient(to right, #f44336, #c62828);
+}
+
+.edit { 
+  background: linear-gradient(to right, #FFA500, #FF8C00);
+}
+
+/* Add some additional action buttons */
+.approve {
+  background: linear-gradient(to right, #4CAF50, #2E7D32);
+}
+
+.delete {
+  background: linear-gradient(to right, #9e9e9e, #616161);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+  
+  th, td {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for table rows */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+tbody tr {
+  animation: fadeIn 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+tbody tr:nth-child(1) { animation-delay: 0.1s; }
+tbody tr:nth-child(2) { animation-delay: 0.2s; }
+tbody tr:nth-child(3) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <a href="home.html"><h1>Admin Panel</h1></a>
+
+  <h2>Leaderboard Saat Ini</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Skor</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardTable"></tbody>
+  </table>
+
+  <h2>Komentar Pengguna Menunggu Verifikasi</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Komentar</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="commentTable"></tbody>
+  </table>
+
+  <h2>Manajemen Komentar</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Nama</th>
+      <th>Komentar</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody id="manageCommentTable"></tbody>
+</table>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBG6YZQUUVoYAnqvItx4jXZM_O2XNBAG0Q",
+      authDomain: "praktikum9-508a3.firebaseapp.com",
+      databaseURL: "https://praktikum9-508a3-default-rtdb.firebaseio.com",
+      projectId: "praktikum9-508a3",
+      storageBucket: "praktikum9-508a3.appspot.com",
+      messagingSenderId: "773024358158",
+      appId: "1:773024358158:web:64d302b39c889bf2ab415f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const pendingRef = ref(db, 'pendingScores');
+    const scoresRef = ref(db, 'scores');
+    const commentsRef = ref(db, 'comments');
+
+    const pendingTable = document.getElementById('pendingTable');
+    const leaderboardTable = document.getElementById('leaderboardTable');
+    const commentTable = document.getElementById('commentTable');
+
+
+    // Tampilkan leaderboard
+    onValue(scoresRef, (snapshot) => {
+      leaderboardTable.innerHTML = '';
+      const data = snapshot.val();
+      if (data) {
+        Object.entries(data).forEach(([key, entry]) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${entry.name}</td>
+            <td>${entry.score}</td>
+            <td>
+              <button class="edit">Edit</button>
+              <button class="reject">Hapus</button>
+            </td>`;
+          row.querySelector('.edit').onclick = () => {
+            const newName = prompt('Edit Nama:', entry.name);
+            const newScore = prompt('Edit Skor:', entry.score);
+            if (newName && newScore && !isNaN(parseInt(newScore))) {
+              update(ref(db, 'scores/' + key), {
+                name: newName,
+                score: parseInt(newScore)
+              });
+            }
+          };
+          row.querySelector('.reject').onclick = () => {
+            if (confirm('Yakin ingin menghapus skor ini?')) {
+              remove(ref(db, 'scores/' + key));
+            }
+          };
+          leaderboardTable.appendChild(row);
+        });
+      } else {
+        leaderboardTable.innerHTML = `<tr><td colspan="3">Leaderboard kosong.</td></tr>`;
+      }
+    });
+
+    function approveComment(key) {
+  update(ref(db, 'comments/' + key), { verified: true });
+}
+
+    // Tampilkan komentar pengguna
+onValue(commentsRef, (snapshot) => {
+  commentTable.innerHTML = '';
+  const data = snapshot.val();
+  if (data) {
+    Object.entries(data).forEach(([key, comment]) => {
+      if (comment.verified === false) { // hanya komentar belum diverifikasi
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${comment.name}</td>
+          <td>${comment.message}</td>
+          <td>
+            <button class="approve">Terima</button>
+            <button class="reject">Hapus</button>
+          </td>`;
+        row.querySelector('.approve').onclick = () => approveComment(key);
+        row.querySelector('.reject').onclick = () => {
+          if (confirm('Yakin ingin menghapus komentar ini?')) {
+            remove(ref(db, 'comments/' + key));
+          }
+        };
+        commentTable.appendChild(row);
+      }
+    });
+  } else {
+    commentTable.innerHTML = `<tr><td colspan="3">Tidak ada komentar menunggu verifikasi.</td></tr>`;
+  }
+});
+
+const manageCommentTable = document.getElementById('manageCommentTable');
+
+onValue(commentsRef, (snapshot) => {
+  commentTable.innerHTML = '';
+  manageCommentTable.innerHTML = '';
+  const data = snapshot.val();
+  if (data) {
+    Object.entries(data).forEach(([key, comment]) => {
+      // Komentar belum diverifikasi → tampilkan di verifikasi
+      if (comment.verified === false) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${comment.name}</td>
+          <td>${comment.message}</td>
+          <td>
+            <button class="approve">Terima</button>
+            <button class="reject">Hapus</button>
+          </td>`;
+        row.querySelector('.approve').onclick = () => approveComment(key);
+        row.querySelector('.reject').onclick = () => {
+          if (confirm('Yakin ingin menghapus komentar ini?')) {
+            remove(ref(db, 'comments/' + key));
+          }
+        };
+        commentTable.appendChild(row);
+      }
+
+      // Komentar sudah diverifikasi → tampilkan di Manajemen Komentar
+      if (comment.verified === true) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${comment.name}</td>
+          <td>${comment.message}</td>
+          <td>
+            <button class="edit">Edit</button>
+            <button class="reject">Hapus</button>
+          </td>`;
+        row.querySelector('.edit').onclick = () => {
+          const newName = prompt("Edit Nama:", comment.name);
+          const newMessage = prompt("Edit Komentar:", comment.message);
+          if (newName && newMessage) {
+            update(ref(db, 'comments/' + key), {
+              name: newName,
+              message: newMessage
+            });
+          }
+        };
+        row.querySelector('.reject').onclick = () => {
+          if (confirm('Yakin ingin menghapus komentar ini?')) {
+            remove(ref(db, 'comments/' + key));
+          }
+        };
+        manageCommentTable.appendChild(row);
+      }
+    });
+  } else {
+    commentTable.innerHTML = `<tr><td colspan="3">Tidak ada komentar menunggu verifikasi.</td></tr>`;
+    manageCommentTable.innerHTML = `<tr><td colspan="3">Tidak ada komentar yang diverifikasi.</td></tr>`;
+  }
+});
+
+  </script>
+</body>
+</html>

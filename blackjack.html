@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blackjack Kalkulus</title>
+    <title>Blackjack Turunan</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="sidebar.css">
 </head>
 
 <body>
@@ -14,47 +15,63 @@
         <div class="sidebar-header">
             <img src="https://png.pngtree.com/png-vector/20221114/ourmid/pngtree-fx-icon-sign-camera-vector-png-image_34640908.png"
                 alt="Logo" class="sidebar-logo" />
-            <h2>Calculus</h2>
+            <h2>Turunanify</h2>
         </div>
         <nav class="sidebar-menu">
             <a href="home.html"">MATERI</a>
       <a href=" kalkulator.html">KALKULATOR TURUNAN</a>
             <a href="index.html" id="title-focus">RANDOM QUIZ</a>
-            <a href="about.html">ABOUT</a>
+      <div class="comment-section">
+        <h3>Tinggalkan Komentar</h3>
+        <form id="comment-form">
+          <input type="text" id="name" placeholder="Nama Anda" required />
+          <textarea id="message" placeholder="Tulis komentar..." required></textarea>
+          <button type="submit">Kirim Komentar</button>
+        </form>
+
+        <div class="comments-display">
+          <h4>Komentar Terbaru:</h4>
+          <div class="comments-container" id="comments-container">
+            <!-- Komentar akan muncul di sini secara dinamis -->
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
         </nav>
     </div>
     <div id="name-modal" class="modal-overlay" style="display:flex;">
         <div class="modal-box">
             <h2>Masukkan Nama Anda</h2>
             <input type="text" id="player-name" placeholder="Nama pemain" maxlength="20">
-            <button id="start-with-name">Mulai Game</button>
+            <button id="start-with-name" onclick="checkPlayerName()">Mulai Game</button>
         </div>
     </div>
 
     <div class="leaderboard-container">
         <h3>🏆 Leaderboard</h3>
         <div id="leaderboard-content">
-            </div>
         </div>
+    </div>
     </div>
 
-<div id="start-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-box" id="modal-box">
-        <p id="start-modal-result"></p>
-        <h2 id="start-modal-title">Selamat datang di Blackjack Kalkulus</h2>
-        <div class="game-explanation" id="game-explanation">
-            <p>Di Game ini akan ada:</p>
-            <ul>
-                <li>Permainan Blackjack klasik dengan twist matematika</li>
-                <li>Quiz turunan yang memberikan power up spesial</li>
-                <li>Leaderboard yang mencatat banyak skor dari menjawab soal kalkulus dan menang blackjack</li>
-                <li>Kombinasi strategi kartu dan keahlian kalkulus</li>
-            </ul>
-            <p>Jawab quiz dengan benar untuk mendapatkan keuntungan dan pembelajaran dakam permainan</p>
+    <div id="start-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box" id="modal-box">
+            <p id="start-modal-result"></p>
+            <h2 id="start-modal-title">Selamat datang di Blackjack Kalkulus</h2>
+            <div class="game-explanation" id="game-explanation">
+                <p>Di Game ini akan ada:</p>
+                <ul>
+                    <li>Permainan Blackjack klasik dengan twist matematika turunan</li>
+                    <li>Quiz turunan yang memberikan power up spesial</li>
+                    <li>Leaderboard yang mencatat banyak skor dari menjawab soal kalkulus dan menang blackjack</li>
+                    <li>Kombinasi strategi kartu dan keahlian kalkulus</li>
+                </ul>
+                <p>Jawab quiz dengan benar untuk mendapatkan keuntungan dan pembelajaran dalam permainan</p>
+            </div>
+            <button id="start-game-btn">Mulai Game</button>
         </div>
-        <button id="start-game-btn">Mulai Game</button>
     </div>
-</div>
     <div class="container">
 
         <div class="game-area">
@@ -62,7 +79,7 @@
             <div class="cards" id="dealer-cards"></div>
         </div>
         <div class="score">Nilai: <span id="dealer-score">?</span></div>
-        <div class="message" id="message"></div>
+        <div class="gameMessage" id="gameMessage"></div>
 
         <div>
             <h2>Player</h2>
@@ -89,7 +106,7 @@
         <div class="modal-content">
             <h2 id="calculus-question"></h2>
             <div class="choices-grid" id="calculus-choices">
-                
+
             </div>
 
         </div>
@@ -104,6 +121,7 @@
     </div>
 
     <script type=" module" src="script.js"></script>
+    
 </body>
 
 </html>

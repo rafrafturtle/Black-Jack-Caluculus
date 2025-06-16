@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getDatabase, get, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
-
+import { getDatabase, get , query, orderByChild, equalTo, ref, push, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+ 
 
 const firebaseConfig = {
     apiKey: "AIzaSyBG6YZQUUVoYAnqvItx4jXZM_O2XNBAG0Q",
@@ -23,7 +23,7 @@ let values = [];
 let powerupUsedThisTurn = false;
 let playerScore = 0;
 
-fetch('gameData.json')
+fetch('data.json')
     .then(response => response.json())
     .then(data => {
         suits = data.deck.suits;
@@ -58,7 +58,7 @@ const dealerCardsEl = document.getElementById('dealer-cards');
 const playerCardsEl = document.getElementById('player-cards');
 const dealerScoreEl = document.getElementById('dealer-score');
 const playerScoreEl = document.getElementById('player-score');
-const messageEl = document.getElementById('message');
+const messageEl = document.getElementById('gameMessage');
 const hitBtn = document.getElementById('hit');
 const standBtn = document.getElementById('stand');
 const calculusBtn = document.getElementById('calculus-btn');
@@ -174,7 +174,7 @@ function stand() {
     } else if (playerScore > dealerScore) {
         endGame("Anda menang!", true);
     } else {
-        endGame("Seri!", true);
+        endGame("Seri!", true, true);
     }
 
     if (!calculusBtnUsed && !gameOver) {
@@ -315,56 +315,82 @@ function loadLeaderboard() {
     });
 }
 
-function saveScore() {
-    if (!playerName || playerScore <= 0) return;
+function saveScore(name, score) {
+    if (!name || score <= 0) return;
+
+    const scoresRef = ref(database, 'scores');
 
     get(scoresRef).then(snapshot => {
-        const scores = snapshot.val();
         let found = false;
 
-        
-        if (scores) {
-            Object.entries(scores).forEach(([key, data]) => {
-                if (data.name.toLowerCase() === playerName.toLowerCase()) {
-                    found = true;
-                    if (playerScore > data.score) {
-                        update(ref(db, 'scores/' + key), {
-                            score: playerScore,
-                            timestamp: new Date().toISOString()
+        snapshot.forEach(childSnapshot => {
+            const data = childSnapshot.val();
+            const key = childSnapshot.key;
+
+            if (data.name === name) {
+                found = true;
+
+                if (score > data.score) {
+                    const updatedEntry = {
+                        name: name,
+                        score: score,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    set(ref(database, 'scores/' + key), updatedEntry)
+                        .then(() => {
+                            console.log("Skor diperbarui di leaderboard.");
+                        })
+                        .catch(error => {
+                            console.error("Gagal memperbarui skor:", error);
                         });
-                    }
+                } else {
+                    console.log("Skor tidak diperbarui karena tidak lebih tinggi.");
                 }
-            });
-        }
+            }
+        });
 
         if (!found) {
             const newScoreRef = push(scoresRef);
-            set(newScoreRef, {
-                name: playerName,
-                score: playerScore,
+            const newEntry = {
+                name: name,
+                score: score,
                 timestamp: new Date().toISOString()
-            });
+            };
+
+            set(newScoreRef, newEntry)
+                .then(() => {
+                    console.log("Skor baru disimpan ke leaderboard.");
+                })
+                .catch(error => {
+                    console.error("Gagal menyimpan skor baru:", error);
+                });
         }
     }).catch(error => {
-        console.error("Gagal menyimpan skor:", error);
+        console.error("Gagal mengakses skor:", error);
     });
 }
 
 
 
-function endGame(msg, isWin) {
+
+function endGame(msg, isWin, isDraw = false) {
     window.scrollTo(0, 0);
     gameOver = true;
 
-    if (!isWin){
-        saveScore(); 
+    if (isDraw) {
+        playerScore = Math.floor(playerScore / 2);
     }
+
+    if (!isWin) {
+        saveScore(playerName, playerScore);
+    }
+
     updateScoreDisplay();
     messageEl.textContent = msg;
 
-    
     setTimeout(() => {
-        openStartModal(false, msg);
+        openStartModal(false, msg, isWin); // kirim isWin ke modal
     }, 1500);
 }
 
@@ -431,36 +457,61 @@ function closeModal() {
     calculusModal.style.display = 'none';
 }
 
+function formatTerm(coef, exp) {
+    if (exp === 0) return `${coef}`;
+    if (exp === 1) return `${coef === 1 ? '' : coef}x`;
+    return `${coef === 1 ? '' : coef}x<sup>${exp}</sup>`;
+}
+
+function formatDerivative(coef, exp) {
+    if (exp === 1) return `${coef}`;
+    if (exp === 2) return `${coef}x`;
+    return `${coef}x<sup>${exp - 1}</sup>`;
+}
+
+function generateUniqueExponents(count, max = 6) {
+    const set = new Set();
+    while (set.size < count) {
+        set.add(Math.floor(Math.random() * max) + 1);
+    }
+    return Array.from(set);
+}
+
+function generateUniqueCoefs(count, max = 20) {
+    const set = new Set();
+    while (set.size < count) {
+        set.add(Math.floor(Math.random() * max) + 1);
+    }
+    return Array.from(set);
+}
+
 function generateCalculusQuestions(count = 20) {
     const formats = [
         (a1, n1, a2, n2) => ({
-            question: `Turunan dari f(x) = x<sup>${n1}</sup> + ${a1}x<sup>${n2}</sup>`,
-            answer: `f'(x) = ${n1}x<sup>${n1 - 1}</sup> + ${a1 * n2}x<sup>${n2 - 1}</sup>`,
+            question: `Turunan dari f(x) = ${formatTerm(1, n1)} + ${formatTerm(a1, n2)}`,
+            answer: `f'(x) = ${formatDerivative(1 * n1, n1)} + ${formatDerivative(a1 * n2, n2)}`,
             explanation: `Turunan dari x<sup>${n1}</sup> adalah ${n1}x<sup>${n1 - 1}</sup>, dan turunan dari ${a1}x<sup>${n2}</sup> adalah ${a1 * n2}x<sup>${n2 - 1}</sup>.`
         }),
         (a1, n1, a2) => ({
-            question: `Turunan dari f(x) = ${a1}x<sup>${n1}</sup> + x<sup>${n1}</sup> + ${a2}x`,
-            answer: `f'(x) = ${(a1 + 1) * n1}x<sup>${n1 - 1}</sup> + ${a2}`,
+            question: `Turunan dari f(x) = ${formatTerm(a1, n1)} + ${formatTerm(1, n1)} + ${formatTerm(a2, 1)}`,
+            answer: `f'(x) = ${formatDerivative((a1 + 1) * n1, n1)} + ${a2}`,
             explanation: `Gabungan dari dua suku berpangkat ${n1} menjadi ${(a1 + 1) * n1}x<sup>${n1 - 1}</sup>, dan turunan dari ${a2}x adalah ${a2}.`
         }),
         (a1, n1, a2, n2, a3, n3) => ({
-            question: `Turunan Dari f(x) = x<sup>${n1}</sup> + ${a1}x<sup>${n2}</sup> + ${a2}x<sup>${n3}</sup>`,
-            answer: `f'(x) = ${n1}x<sup>${n1 - 1}</sup> + ${a1 * n2}x<sup>${n2 - 1}</sup> + ${a2 * n3}x<sup>${n3 - 1}</sup>`,
+            question: `Turunan dari f(x) = ${formatTerm(1, n1)} + ${formatTerm(a1, n2)} + ${formatTerm(a2, n3)}`,
+            answer: `f'(x) = ${formatDerivative(1 * n1, n1)} + ${formatDerivative(a1 * n2, n2)} + ${formatDerivative(a2 * n3, n3)}`,
             explanation: `Turunan dilakukan pada tiap suku.`
         }),
     ];
 
     calculusQuestions.length = 0;
+
     for (let i = 0; i < count; i++) {
         const formatIndex = Math.floor(Math.random() * formats.length);
         const f = formats[formatIndex];
 
-        const a1 = Math.floor(Math.random() * 20) + 1;
-        const a2 = Math.floor(Math.random() * 20) + 1;
-        const a3 = Math.floor(Math.random() * 20) + 1;
-        const n1 = Math.floor(Math.random() * 6) + 1;
-        const n2 = Math.floor(Math.random() * 6) + 1;
-        const n3 = Math.floor(Math.random() * 6) + 1;
+        const [a1, a2, a3] = generateUniqueCoefs(3);
+        const [n1, n2, n3] = generateUniqueExponents(3);
 
         let q;
         if (formatIndex === 0) q = f(a1, n1, a2, n2);
@@ -556,6 +607,8 @@ function usePowerup(type) {
 
                 if (calculateScore(playerHand) > 21) {
                     endGame("Anda bust! Dealer menang.", false);
+                }else if (calculateScore(playerHand)===21){
+                    endGame('',false)
                 }
             } else {
                 alert("Pilihan tidak valid. Tidak ada kartu yang ditambahkan.");
@@ -594,10 +647,9 @@ const startModal = document.getElementById('start-modal');
 const startModalTitle = document.getElementById('start-modal-title');
 const startGameBtn = document.getElementById('start-game-btn');
 
-function openStartModal(isNewGame = true, resultMessage = "") {
+function openStartModal(isNewGame = true, resultMessage = "", wasWin = true) {
     const modalBox = document.querySelector('#start-modal .modal-box');
 
-    
     modalBox.classList.remove('default-state', 'win-state', 'lose-state', 'draw-state');
 
     if (isNewGame) {
@@ -612,24 +664,38 @@ function openStartModal(isNewGame = true, resultMessage = "") {
 
         const lowerMsg = resultMessage.toLowerCase();
 
-        if (lowerMsg.includes("anda menang")) {
-            startModalTitle.innerHTML = "Game berlanjut!<br>dapatkan skor setinggi mungkin!";
-            startGameBtn.textContent = "Lanjut";
-            modalBox.classList.add('win-state');
+        if ((lowerMsg.includes("dealer menang") || lowerMsg.includes("anda bust")) && playerScore === 0) {
+            startModalTitle.innerHTML = "Game berakhir!<br>Tingkatkan skor agar masuk leaderboard";
+            modalBox.classList.add('lose-state');
         } else if (lowerMsg.includes("dealer menang") || lowerMsg.includes("anda bust")) {
             startModalTitle.innerHTML = "Game berakhir!<br>Skor disimpan ke leaderboard";
             modalBox.classList.add('lose-state');
-        } else {
-            startModalTitle.innerHTML = "Game berakhir!<br>Skor disimpan ke leaderboard";
+        } else if (lowerMsg.includes("seri")) {
+            startModalTitle.innerHTML = "Game berlanjut!<br>Tapi Skor berkurang setengah";
             modalBox.classList.add('draw-state');
+        } else {
+            startModalTitle.innerHTML = "Game berlanjut!<br>dapatkan skor setinggi mungkin!";
+            startGameBtn.textContent = "Lanjut";
+            modalBox.classList.add('win-state');
+        }
+
+        // Reset skor ke 0 jika barusan kalah
+        if (!wasWin) {
+            startGameBtn.onclick = () => {
+                playerScore = 0;
+                updateScoreDisplay();
+                startModal.style.display = 'none';
+                deal();
+            };
+        } else {
+            startGameBtn.onclick = () => {
+                startModal.style.display = 'none';
+                deal();
+            };
         }
     }
 
     document.getElementById('start-modal').style.display = "flex";
-
-
-    
-    document.getElementById('start-modal').style.display = 'flex';
     document.getElementById('hit').disabled = true;
     document.getElementById('stand').disabled = true;
 }
@@ -664,3 +730,103 @@ document.querySelectorAll('.powerup-card').forEach(card => {
         usePowerup(type);
     });
 });
+
+        const db = getDatabase(app);
+
+        // Control variables
+        let canComment = true;
+        const delayTime = 15 * 1000; // 15 seconds cooldown
+
+        // Load only verified comments (status: true)
+        function loadVerifiedComments() {
+          const commentsRef = ref(db, 'comments');
+          const verifiedQuery = query(commentsRef, orderByChild('verified'), equalTo(true));
+
+          onValue(verifiedQuery, (snapshot) => {
+            const commentsData = snapshot.val();
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+
+            if (commentsData) {
+              // Convert to array and sort by timestamp (newest first)
+              const commentsArray = Object.values(commentsData)
+                .sort((a, b) => b.timestamp - a.timestamp);
+
+              commentsArray.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment-item';
+
+                // Format timestamp
+                const commentDate = new Date(comment.timestamp);
+                const timeString = commentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateString = commentDate.toLocaleDateString();
+
+                commentElement.innerHTML = `
+          <div class="comment-name">${comment.name}</div>
+          <div class="comment-text">${comment.message}</div>
+          <div class="comment-time">${dateString} ${timeString}</div>
+        `;
+
+                container.prepend(commentElement); // Add to top
+              });
+            } else {
+              container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Belum ada komentar</p>';
+            }
+          });
+        }
+
+        // Submit comment form
+        document.getElementById('comment-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const name = document.getElementById('name').value.trim();
+          const message = document.getElementById('message').value.trim();
+          const sendButton = document.querySelector('#comment-form button');
+
+          if (!canComment) {
+            return;
+          }
+
+          if (name && message) {
+            sendButton.disabled = true;
+            sendButton.textContent = "Mengirim...";
+
+            // Submit comment with verified: false by default
+            const commentRef = ref(db, 'comments');
+            push(commentRef, {
+              name,
+              message,
+              timestamp: Date.now(),
+              verified: false // Default to unverified
+            })
+              .then(() => {
+
+                document.getElementById('comment-form').reset();
+
+                // Cooldown timer
+                canComment = false;
+                setTimeout(() => {
+                  canComment = true;
+                }, delayTime);
+              })
+              .catch((err) => {
+                console.error(err);
+              })
+              .finally(() => {
+                sendButton.disabled = false;
+                sendButton.textContent = "Kirim Komentar";
+              });
+          }
+        });
+
+        // Load verified comments when page loads
+        document.addEventListener('DOMContentLoaded', loadVerifiedComments);
+
+    window.checkPlayerName = checkPlayerName
+    function checkPlayerName() {
+    const nameInput = document.getElementById('player-name').value.trim();
+    
+    if (nameInput.toLowerCase() === 'admin123') {
+      window.location.href = 'admin.html';
+    }
+  }

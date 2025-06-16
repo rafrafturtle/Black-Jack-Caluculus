@@ -1,6 +1,6 @@
     let questions = [];
 
-    fetch('soalMateri.json')
+    fetch('data.json')
       .then(response => response.json())
       .then(data => {
         questions = data.questions;
@@ -84,3 +84,5 @@
 
   window.addEventListener('scroll', revealOnScroll);
   window.addEventListener('load', revealOnScroll);
+
+  

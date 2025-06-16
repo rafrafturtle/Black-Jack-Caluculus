@@ -7,6 +7,7 @@
   <title>Kalkulus</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style2.css">
+  <link rel="stylesheet" href="sidebar.css">
 </head>
 
 <body>
@@ -15,13 +16,27 @@
       <img
         src="https://png.pngtree.com/png-vector/20221114/ourmid/pngtree-fx-icon-sign-camera-vector-png-image_34640908.png"
         alt="Logo" class="sidebar-logo" />
-      <h2>Calculus</h2>
+      <h2>Turunanify</h2>
     </div>
     <nav class="sidebar-menu">
       <a href="home.html" id="title-focus">MATERI</a>
       <a href="kalkulator.html">KALKULATOR TURUNAN</a>
       <a href="blackjack.html">RANDOM QUIZ</a>
-      <a href="about.html">ABOUT</a>
+      <div class="comment-section">
+        <h3>Tinggalkan Komentar</h3>
+        <form id="comment-form">
+          <input type="text" id="name" placeholder="Nama Anda" required />
+          <textarea id="message" placeholder="Tulis komentar..." required></textarea>
+          <button type="submit">Kirim Komentar</button>
+        </form>
+
+        <div class="comments-display">
+          <h4>Komentar Terbaru:</h4>
+          <div class="comments-container" id="comments-container">
+            <!-- Komentar akan muncul di sini secara dinamis -->
+          </div>
+        </div>
+      </div>
     </nav>
   </div>
 
@@ -93,9 +108,13 @@
       <section>
         <h2>Aturan Turunan Polinomial</h2>
         <p>Gunakan aturan umum berikut:</p>
+        <div class="gif">
+          <img src="power-rule.gif" alt="Aturan Turunan Pangkat" width="300px">
+        </div><br>
         <div class="highlight-box">
           Jika f(x) = ax<sup>n</sup>, maka f'(x) = n·a·x<sup>n-1</sup>
         </div>
+
         <ul>
           <li>Pangkat dikalikan dengan koefisien.</li>
           <li>Lalu kurangi pangkat dengan satu.</li>
@@ -105,40 +124,40 @@
 
       <section>
         <h2>Contoh Soal</h2>
-   <!-- Soal 1 -->
-<p>Diketahui fungsi: <span class="math">f(x) = 2x<sup>4</sup> + x<sup>3</sup></span></p>
-<ol>
-  <li>Turunan dari 2x<sup>4</sup> adalah 8x<sup>3</sup></li>
-  <li>Turunan dari x<sup>3</sup> adalah 3x<sup>2</sup></li>
-</ol>
-<div class="answer-box">
-  Jadi: f'(x) = 8x<sup>3</sup> + 3x<sup>2</sup>
-</div>
+        <!-- Soal 1 -->
+        <p>Diketahui fungsi: <span class="math">f(x) = 2x<sup>4</sup> + x<sup>3</sup></span></p>
+        <ol>
+          <li>Turunan dari 2x<sup>4</sup> adalah 8x<sup>3</sup></li>
+          <li>Turunan dari x<sup>3</sup> adalah 3x<sup>2</sup></li>
+        </ol>
+        <div class="answer-box">
+          Jadi: f'(x) = 8x<sup>3</sup> + 3x<sup>2</sup>
+        </div>
 
-<br>
+        <br>
 
-<!-- Soal 2 -->
-<p>Misalkan fungsi berikut: <span class="math">f(x) = 6x<sup>3</sup> - 2</span></p>
-<ol>
-  <li>6x<sup>3</sup> diturunkan menjadi 18x<sup>2</sup></li>
-  <li>Turunan dari -2 adalah 0</li>
-</ol>
-<div class="answer-box">
-  Maka: f'(x) = 18x<sup>2</sup> - 2
-</div>
+        <!-- Soal 2 -->
+        <p>Misalkan fungsi berikut: <span class="math">f(x) = 6x<sup>3</sup> - 2</span></p>
+        <ol>
+          <li>6x<sup>3</sup> diturunkan menjadi 18x<sup>2</sup></li>
+          <li>Turunan dari -2 adalah 0</li>
+        </ol>
+        <div class="answer-box">
+          Maka: f'(x) = 18x<sup>2</sup> - 2
+        </div>
 
-<br>
+        <br>
 
-<!-- Soal 3 -->
-<p>Pertimbangkan fungsi: <span class="math">f(x) = x<sup>5</sup> - 4x<sup>2</sup> + 9</span></p>
-<ol>
-  <li>Turunan dari x<sup>5</sup> adalah 5x<sup>4</sup></li>
-  <li>-4x<sup>2</sup> diturunkan menjadi -8x</li>
-  <li>Konstanta 9 diturunkan menjadi 0</li>
-</ol>
-<div class="answer-box">
-  Sehingga: f'(x) = 5x<sup>4</sup> - 8x
-</div>
+        <!-- Soal 3 -->
+        <p>Pertimbangkan fungsi: <span class="math">f(x) = x<sup>5</sup> - 4x<sup>2</sup> + 9</span></p>
+        <ol>
+          <li>Turunan dari x<sup>5</sup> adalah 5x<sup>4</sup></li>
+          <li>-4x<sup>2</sup> diturunkan menjadi -8x</li>
+          <li>Konstanta 9 diturunkan menjadi 0</li>
+        </ol>
+        <div class="answer-box">
+          Sehingga: f'(x) = 5x<sup>4</sup> - 8x
+        </div>
 
       </section>
       <div class="quiz-container-2">
@@ -152,11 +171,115 @@
       </div>
 
 
-
-
-
-
       <script src="script2.js"></script>
+      <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBG6YZQUUVoYAnqvItx4jXZM_O2XNBAG0Q",
+          authDomain: "praktikum9-508a3.firebaseapp.com",
+          databaseURL: "https://praktikum9-508a3-default-rtdb.firebaseio.com",
+          projectId: "praktikum9-508a3",
+          storageBucket: "praktikum9-508a3.appspot.com",
+          messagingSenderId: "773024358158",
+          appId: "1:773024358158:web:64d302b39c889bf2ab415f"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Control variables
+        let canComment = true;
+        const delayTime = 15 * 1000; // 15 seconds cooldown
+
+        // Load only verified comments (status: true)
+        function loadVerifiedComments() {
+          const commentsRef = ref(db, 'comments');
+          const verifiedQuery = query(commentsRef, orderByChild('verified'), equalTo(true));
+
+          onValue(verifiedQuery, (snapshot) => {
+            const commentsData = snapshot.val();
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+
+            if (commentsData) {
+              // Convert to array and sort by timestamp (newest first)
+              const commentsArray = Object.values(commentsData)
+                .sort((a, b) => b.timestamp - a.timestamp);
+
+              commentsArray.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment-item';
+
+                // Format timestamp
+                const commentDate = new Date(comment.timestamp);
+                const timeString = commentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateString = commentDate.toLocaleDateString();
+
+                commentElement.innerHTML = `
+          <div class="comment-name">${comment.name}</div>
+          <div class="comment-text">${comment.message}</div>
+          <div class="comment-time">${dateString} ${timeString}</div>
+        `;
+
+                container.prepend(commentElement); // Add to top
+              });
+            } else {
+              container.innerHTML = '<p style="color: #9ca3af; text-align: center;">Belum ada komentar</p>';
+            }
+          });
+        }
+
+        // Submit comment form
+        document.getElementById('comment-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const name = document.getElementById('name').value.trim();
+          const message = document.getElementById('message').value.trim();
+          const sendButton = document.querySelector('#comment-form button');
+
+          if (!canComment) {
+            return;
+          }
+
+          if (name && message) {
+            sendButton.disabled = true;
+            sendButton.textContent = "Mengirim...";
+
+            // Submit comment with verified: false by default
+            const commentRef = ref(db, 'comments');
+            push(commentRef, {
+              name,
+              message,
+              timestamp: Date.now(),
+              verified: false // Default to unverified
+            })
+              .then(() => {
+
+                document.getElementById('comment-form').reset();
+
+                // Cooldown timer
+                canComment = false;
+                setTimeout(() => {
+                  canComment = true;
+                }, delayTime);
+              })
+              .catch((err) => {
+                console.error(err);
+              })
+              .finally(() => {
+                sendButton.disabled = false;
+                sendButton.textContent = "Kirim Komentar";
+              });
+          }
+        });
+
+        // Load verified comments when page loads
+        document.addEventListener('DOMContentLoaded', loadVerifiedComments);
+      </script>
+
 </body>
 
 </html>
