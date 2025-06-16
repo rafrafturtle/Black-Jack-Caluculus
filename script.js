@@ -210,7 +210,7 @@ function calculateScore(hand) {
 function renderHands(showDealerCard = false, animatePlayer = false, animateDealer = false) {
     dealerCardsEl.innerHTML = '';
 
-    if (showDealerCard || powerups.peek) {
+    if (showDealerCard || powerups.peek || calculateScore(dealerHand) > 21) {
         dealerScoreEl.textContent = calculateScore(dealerHand);
     } else {
         const visibleCard = dealerHand[1];
