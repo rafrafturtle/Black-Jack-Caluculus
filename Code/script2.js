@@ -1,6 +1,6 @@
     let questions = [];
 
-    fetch('./data.json')
+    fetch('Turunanify/Code/data.json')
       .then(response => response.json())
       .then(data => {
         questions = data.questions;
