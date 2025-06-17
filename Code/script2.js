@@ -1,6 +1,6 @@
     let questions = [];
 
-    fetch('Code/data.json')
+    fetch('./data.json')
       .then(response => response.json())
       .then(data => {
         questions = data.questions;
