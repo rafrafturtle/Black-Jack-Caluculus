@@ -16,23 +16,11 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const scoresRef = ref(database, 'scores');
 
+let suits = ["♠", "♥", "♦", "♣"];
+let values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
-
-let suits = [];
-let values = [];
 let powerupUsedThisTurn = false;
 let playerScore = 0;
-
-fetch('data.json')
-    .then(response => response.json())
-    .then(data => {
-        suits = data.deck.suits;
-        values = data.deck.values;
-        init();
-    })
-    .catch(error => {
-        console.error("Gagal memuat data JSON:", error);
-    });
 
 let deck = [];
 let playerHand = [];
