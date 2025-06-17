@@ -23,7 +23,7 @@ let values = [];
 let powerupUsedThisTurn = false;
 let playerScore = 0;
 
-fetch('data.json')
+fetch('./data.json')
     .then(response => response.json())
     .then(data => {
         suits = data.deck.suits;
